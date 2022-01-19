@@ -73,14 +73,14 @@ let mousePos = new Vector2(0,0);
   clock.start();
 
   renderer.setAnimationLoop(() => {
-    ring1.rotation.x = ring1.rotation.x * 0.95 + mousePos.y * 0.06;
-    ring1.rotation.y = ring1.rotation.y * 0.95 + mousePos.x * 0.06;
+    ring1.rotation.x = ring1.rotation.x * 0.95 + mousePos.y * 0.05 * 1.2;
+    ring1.rotation.y = ring1.rotation.y * 0.95 + mousePos.x * 0.05 * 1.2;
 
-    ring2.rotation.x = ring2.rotation.x * 0.95 + mousePos.y * 0.02;
-    ring2.rotation.y = ring2.rotation.y * 0.95 + mousePos.x * 0.02;
+    ring2.rotation.x = ring2.rotation.x * 0.95 + mousePos.y * 0.05 * 0.375;
+    ring2.rotation.y = ring2.rotation.y * 0.95 + mousePos.x * 0.05 * 0.375;
 
-    ring3.rotation.x = ring3.rotation.x * 0.95 - mousePos.y * 0.015;
-    ring3.rotation.y = ring3.rotation.y * 0.95 - mousePos.x * 0.015;
+    ring3.rotation.x = ring3.rotation.x * 0.95 - mousePos.y * 0.05 * 0.275;
+    ring3.rotation.y = ring3.rotation.y * 0.95 - mousePos.x * 0.05 * 0.275;
 
     let date = new Date();
 
