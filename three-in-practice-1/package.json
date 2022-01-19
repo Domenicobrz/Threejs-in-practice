@@ -1,0 +1,21 @@
+{
+  "name": "three-in-practice-1",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "source": "src/index.html",
+  "dependencies": {
+    "three": "^0.136.0"
+  },
+  "devDependencies": {
+    "parcel": "^2.2.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "parcel",
+    "build": "parcel build"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
