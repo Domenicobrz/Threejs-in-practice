@@ -20,7 +20,6 @@ import {
   PMREMGenerator 
 } from "three";
 import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader";
-import envmapPath from "url:./../assets/cannon_1k_blurred.hdr";
 
 let scene = new Scene();
 scene.background = new Color("white");
@@ -38,11 +37,11 @@ document.body.appendChild(renderer.domElement);
 let pmrem = new PMREMGenerator(renderer);
 pmrem.compileEquirectangularShader();
 
-let ring1, ring2;
+let ring1, ring2, ring3;
 let mousePos = new Vector2(0,0);
 
 (async function init() {
-  let envHdrTexture = await new RGBELoader().loadAsync(envmapPath);
+  let envHdrTexture = await new RGBELoader().loadAsync("./../assets/cannon_1k_blurred.hdr");
   let envRT = pmrem.fromEquirectangular(envHdrTexture);
   
   ring1 = CustomRing(envRT, 0.65, "white");

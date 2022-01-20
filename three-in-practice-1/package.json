@@ -3,17 +3,14 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "source": "src/index.html",
   "dependencies": {
+    "snowpack": "^3.8.8",
     "three": "^0.136.0"
   },
-  "devDependencies": {
-    "parcel": "^2.2.0"
-  },
+  "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "parcel",
-    "build": "parcel build"
+    "start": "snowpack dev"
   },
   "keywords": [],
   "author": "",
