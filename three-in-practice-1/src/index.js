@@ -27,8 +27,7 @@ scene.background = new Color("white");
 let camera = new PerspectiveCamera(45, innerWidth / innerHeight, 0.1, 1000);
 camera.position.set(0,0,10);
 
-let renderer = new WebGLRenderer({ });
-renderer = new WebGLRenderer({ antialias: true });
+let renderer = new WebGLRenderer({ antialias: true });
 renderer.setSize( innerWidth, innerHeight );
 renderer.toneMapping = ACESFilmicToneMapping;
 renderer.outputEncoding = sRGBEncoding; 
