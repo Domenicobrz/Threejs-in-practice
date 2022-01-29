@@ -1,18 +1,17 @@
 {
-  "name": "three-in-practice-1",
+  "name": "three-in-practice-2",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "dependencies": {
-    "snowpack": "3.8.8",
-    "three": "0.136.0"
-  },
-  "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "snowpack dev"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "snowpack": "3.8.8",
+    "three": "0.136.0"
+  }
 }
