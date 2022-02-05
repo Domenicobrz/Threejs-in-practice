@@ -1,22 +1,18 @@
-import { WebGLRenderer, ACESFilmicToneMapping, sRGBEncoding, SphereBufferGeometry, Color, CylinderBufferGeometry, CircleBufferGeometry, RepeatWrapping, DoubleSide, BoxBufferGeometry } from "three";
-import { Mesh } from "three";
-import { MeshBasicMaterial } from "three";
-import { PointLight } from "three";
-import { MeshPhysicalMaterial } from "three";
-import { PerspectiveCamera } from "three";
-import { Scene, PMREMGenerator, DirectionalLight, PCFSoftShadowMap, Object3D, CameraHelper } from "three";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls"; 
-import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader";
-import { mergeBufferGeometries } from "three/examples/jsm/utils/BufferGeometryUtils";
-import SimplexNoise from 'simplex-noise';
-import { Vector2 } from "three";
-import { TextureLoader } from "three";
-import { BufferGeometry } from "three";
+import { 
+  WebGLRenderer, ACESFilmicToneMapping, sRGBEncoding, 
+  Color, CylinderGeometry, 
+  RepeatWrapping, DoubleSide, BoxGeometry, Mesh, PointLight, MeshPhysicalMaterial, PerspectiveCamera,
+  Scene, PMREMGenerator, PCFSoftShadowMap,
+  Vector2, TextureLoader, SphereGeometry, MeshStandardMaterial
+} from 'https://cdn.skypack.dev/three@0.137';
+import { OrbitControls } from 'https://cdn.skypack.dev/three-stdlib@2.8.5/controls/OrbitControls';
+import { RGBELoader } from 'https://cdn.skypack.dev/three-stdlib@2.8.5/loaders/RGBELoader';
+import { mergeBufferGeometries } from 'https://cdn.skypack.dev/three-stdlib@2.8.5/utils/BufferGeometryUtils';
+import SimplexNoise from 'https://cdn.skypack.dev/simplex-noise';
 
 // envmap https://polyhaven.com/a/herkulessaulen
 
 const scene = new Scene();
-// scene.background = new Color("white");
 scene.background = new Color("#FFEECC");
 
 const camera = new PerspectiveCamera(45, innerWidth / innerHeight, 0.1, 1000);
@@ -31,21 +27,15 @@ renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = PCFSoftShadowMap;
 document.body.appendChild(renderer.domElement);
 
-// const light = new DirectionalLight( new Color("#FFCB8E").convertSRGBToLinear().convertSRGBToLinear(), 10 );
-// light.position.set(3, 0.5, 1);
-
 const light = new PointLight( new Color("#FFCB8E").convertSRGBToLinear().convertSRGBToLinear(), 80, 200 );
 light.position.set(10, 20, 10);
 
-light.castShadow = true; // default false
-light.shadow.mapSize.width = 512; // default
-light.shadow.mapSize.height = 512; // default
-light.shadow.camera.near = 0.5; // default
-light.shadow.camera.far = 500; // default
+light.castShadow = true; 
+light.shadow.mapSize.width = 512; 
+light.shadow.mapSize.height = 512; 
+light.shadow.camera.near = 0.5; 
+light.shadow.camera.far = 500; 
 scene.add( light );
-
-// const helper = new CameraHelper(light.shadow.camera);
-// scene.add(helper)
 
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.target.set(0,0,0);
@@ -56,7 +46,6 @@ let pmrem = new PMREMGenerator(renderer);
 pmrem.compileEquirectangularShader();
 
 let envmap;
-let textures;
 
 const MAX_HEIGHT = 10;
 
@@ -65,7 +54,7 @@ const MAX_HEIGHT = 10;
   let rt = pmrem.fromEquirectangular(envmapTexture);
   envmap = rt.texture;
 
-  textures = {
+  let textures = {
     dirt: await new TextureLoader().loadAsync("assets/dirt.png"),
     dirt2: await new TextureLoader().loadAsync("assets/dirt2.jpg"),
     grass: await new TextureLoader().loadAsync("assets/grass.jpg"),
@@ -89,23 +78,20 @@ const MAX_HEIGHT = 10;
     } 
   }
 
-  stoneMesh = hexMesh(stoneGeo, textures.stone);
-  grassMesh = hexMesh(grassGeo, textures.grass);
-  dirt2Mesh = hexMesh(dirt2Geo, textures.dirt2);
-  dirtMesh = hexMesh(dirtGeo, textures.dirt);
-  sandMesh = hexMesh(sandGeo, textures.sand);
+  let stoneMesh = hexMesh(stoneGeo, textures.stone);
+  let grassMesh = hexMesh(grassGeo, textures.grass);
+  let dirt2Mesh = hexMesh(dirt2Geo, textures.dirt2);
+  let dirtMesh  = hexMesh(dirtGeo, textures.dirt);
+  let sandMesh  = hexMesh(sandGeo, textures.sand);
   scene.add(stoneMesh, dirtMesh, dirt2Mesh, sandMesh, grassMesh);
 
-  // let seaTexture = textures.sand.clone();
-  // seaTexture.needsUpdate = true;
   let seaTexture = textures.water;
   seaTexture.repeat = new Vector2(1, 1);
   seaTexture.wrapS = RepeatWrapping;
   seaTexture.wrapT = RepeatWrapping;
 
   let seaMesh = new Mesh(
-    // new CircleBufferGeometry(11, 6),
-    new CylinderBufferGeometry(17, 17, MAX_HEIGHT * 0.2, 50),
+    new CylinderGeometry(17, 17, MAX_HEIGHT * 0.2, 50),
     new MeshPhysicalMaterial({
       envMap: envmap,
       color: new Color("#55aaff").convertSRGBToLinear().multiplyScalar(3),
@@ -120,7 +106,6 @@ const MAX_HEIGHT = 10;
       metalnessMap: seaTexture,
     })
   );
-  // seaMesh.rotation.x = -Math.PI * 0.5;
   seaMesh.receiveShadow = true;
   seaMesh.rotation.y = -Math.PI * 0.333 * 0.5;
   seaMesh.position.set(0, MAX_HEIGHT * 0.1, 0);
@@ -128,7 +113,7 @@ const MAX_HEIGHT = 10;
 
 
   let mapContainer = new Mesh(
-    new CylinderBufferGeometry(17.1, 17.1, MAX_HEIGHT * 0.25, 50, 1, true),
+    new CylinderGeometry(17.1, 17.1, MAX_HEIGHT * 0.25, 50, 1, true),
     new MeshPhysicalMaterial({
       envMap: envmap,
       map: textures.dirt,
@@ -142,7 +127,7 @@ const MAX_HEIGHT = 10;
   scene.add(mapContainer);
 
   let mapFloor = new Mesh(
-    new CylinderBufferGeometry(18.5, 18.5, MAX_HEIGHT * 0.1, 50),
+    new CylinderGeometry(18.5, 18.5, MAX_HEIGHT * 0.1, 50),
     new MeshPhysicalMaterial({
       envMap: envmap,
       map: textures.dirt2,
@@ -152,8 +137,9 @@ const MAX_HEIGHT = 10;
   );
   mapFloor.receiveShadow = true;
   mapFloor.position.set(0, -MAX_HEIGHT * 0.05, 0);
-  // mapFloor.rotation.x = -Math.PI * 0.5;
   scene.add(mapFloor);
+
+  clouds();
 
   renderer.setAnimationLoop(() => {
     controls.update();
@@ -166,10 +152,8 @@ function tileToPosition(tileX, tileY) {
 }
 
 function hexGeometry(height, position) {
-  // let base = new CircleBufferGeometry(1, 6);
-  let geo  = new CylinderBufferGeometry(1, 1, height, 6, 1, false);
+  let geo  = new CylinderGeometry(1, 1, height, 6, 1, false);
   geo.translate(position.x, height * 0.5, position.y);
-  // let top  = new CylinderBufferGeometry()
 
   return geo;
 }
@@ -180,48 +164,37 @@ const GRASS_HEIGHT = MAX_HEIGHT * 0.5;
 const SAND_HEIGHT = MAX_HEIGHT * 0.3;
 const DIRT2_HEIGHT = MAX_HEIGHT * 0;
 
-let stoneGeo;
-let dirtGeo;
-let dirt2Geo;
-let sandGeo;
-let grassGeo;
-
-let stoneMesh;
-let dirtMesh;
-let dirt2Mesh;
-let sandMesh;
-let grassMesh;
+let stoneGeo = new BoxGeometry(0,0,0);
+let dirtGeo = new BoxGeometry(0,0,0);
+let dirt2Geo = new BoxGeometry(0,0,0);
+let sandGeo = new BoxGeometry(0,0,0);
+let grassGeo = new BoxGeometry(0,0,0);
 
 function hex(height, position) {
   let geo = hexGeometry(height, position);
 
   if(height > STONE_HEIGHT) {
-    if(!stoneGeo) stoneGeo = geo;
-    else stoneGeo = mergeBufferGeometries([geo, stoneGeo]);
+    stoneGeo = mergeBufferGeometries([geo, stoneGeo]);
 
     if(Math.random() > 0.8) {
       stoneGeo = mergeBufferGeometries([stoneGeo, stone(height, position)]);
     }
   } else if(height > DIRT_HEIGHT) {
-    if(!dirtGeo) dirtGeo = geo;
-    else dirtGeo = mergeBufferGeometries([geo, dirtGeo]);
+    dirtGeo = mergeBufferGeometries([geo, dirtGeo]);
 
     if(Math.random() > 0.8) {
-      grassGeo = mergeBufferGeometries([grassGeo, grass(height, position)]);
+      grassGeo = mergeBufferGeometries([grassGeo, tree(height, position)]);
     }
   } else if(height > GRASS_HEIGHT) {
-    if(!grassGeo) grassGeo = geo;
-    else grassGeo = mergeBufferGeometries([geo, grassGeo]);
+    grassGeo = mergeBufferGeometries([geo, grassGeo]);
   } else if(height > SAND_HEIGHT) { 
-    if(!sandGeo) sandGeo = geo;
-    else sandGeo = mergeBufferGeometries([geo, sandGeo]);
+    sandGeo = mergeBufferGeometries([geo, sandGeo]);
 
     if(Math.random() > 0.8 && stoneGeo) {
       stoneGeo = mergeBufferGeometries([stoneGeo, stone(height, position)]);
     }
   } else if(height > DIRT2_HEIGHT) {
-    if(!dirt2Geo) dirt2Geo = geo;
-    else dirt2Geo = mergeBufferGeometries([geo, dirt2Geo]);
+    dirt2Geo = mergeBufferGeometries([geo, dirt2Geo]);
   } 
 }
 
@@ -240,16 +213,16 @@ function hexMesh(geo, map) {
   return mesh;
 }
 
-function grass(height, position) {
+function tree(height, position) {
   const treeHeight = Math.random() * 1 + 1.25;
 
-  const geo = new CylinderBufferGeometry(0, 1.5, treeHeight, 3);
+  const geo = new CylinderGeometry(0, 1.5, treeHeight, 3);
   geo.translate(position.x, height + treeHeight * 0 + 1, position.y);
   
-  const geo2 = new CylinderBufferGeometry(0, 1.15, treeHeight, 3);
+  const geo2 = new CylinderGeometry(0, 1.15, treeHeight, 3);
   geo2.translate(position.x, height + treeHeight * 0.6 + 1, position.y);
   
-  const geo3 = new CylinderBufferGeometry(0, 0.8, treeHeight, 3);
+  const geo3 = new CylinderGeometry(0, 0.8, treeHeight, 3);
   geo3.translate(position.x, height + treeHeight * 1.25 + 1, position.y);
 
   return mergeBufferGeometries([geo, geo2, geo3]);
@@ -259,8 +232,46 @@ function stone(height, position) {
   const px = Math.random() * 0.4;
   const pz = Math.random() * 0.4;
 
-  const geo = new BoxBufferGeometry(Math.random() * 0.3 + 0.15, Math.random() * 0.3 + 0.15, Math.random() * 0.3 + 0.15);
+  const geo = new SphereGeometry(Math.random() * 0.3 + 0.1, 7, 7);
   geo.translate(position.x + px, height, position.y + pz);
 
   return geo;
+}
+
+function clouds() {
+  let geo = new SphereGeometry(0, 0, 0); 
+  let count = Math.floor(Math.pow(Math.random(), 0.45) * 4);
+
+  for(let i = 0; i < count; i++) {
+    const puff1 = new SphereGeometry(1.2, 7, 7);
+    const puff2 = new SphereGeometry(1.5, 7, 7);
+    const puff3 = new SphereGeometry(0.9, 7, 7);
+   
+    puff1.translate(-1.85, Math.random() * 0.3, 0);
+    puff2.translate(0,     Math.random() * 0.3, 0);
+    puff3.translate(1.85,  Math.random() * 0.3, 0);
+
+    const cloudGeo = mergeBufferGeometries([puff1, puff2, puff3]);
+    cloudGeo.translate( 
+      Math.random() * 20 - 10, 
+      Math.random() * 7 + 7, 
+      Math.random() * 20 - 10
+    );
+    cloudGeo.rotateY(Math.random() * Math.PI * 2);
+
+    geo = mergeBufferGeometries([geo, cloudGeo]);
+  }
+  
+  const mesh = new Mesh(
+    geo,
+    new MeshStandardMaterial({
+      envMap: envmap, 
+      envMapIntensity: 0.75, 
+      flatShading: true,
+      // transparent: true,
+      // opacity: 0.85,
+    })
+  );
+
+  scene.add(mesh);
 }
