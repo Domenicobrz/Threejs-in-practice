@@ -20,6 +20,7 @@ import {
   RepeatWrapping,
   RingGeometry,
   Vector3,
+  CameraHelper,
 } from "https://cdn.skypack.dev/three@0.137";
 import { RGBELoader } from "https://cdn.skypack.dev/three-stdlib@2.8.5/loaders/RGBELoader";
 import { OrbitControls } from "https://cdn.skypack.dev/three-stdlib@2.8.5/controls/OrbitControls";
@@ -51,13 +52,20 @@ const light = new DirectionalLight(
   200,
 );
 light.position.set(10, 20, 10);
-
 light.castShadow = true;
 light.shadow.mapSize.width = 512;
 light.shadow.mapSize.height = 512;
 light.shadow.camera.near = 0.5;
-light.shadow.camera.far = 500;
+light.shadow.camera.far = 100;
+light.shadow.camera.left = -10;
+light.shadow.camera.bottom = -10;
+light.shadow.camera.top = 10;
+light.shadow.camera.right = 10;
 scene.add(light);
+
+// // Create a helper for the shadow camera (optional)
+// const helper = new CameraHelper( light.shadow.camera );
+// scene.add( helper );
 
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.target.set(0, 0, 0);
@@ -108,12 +116,12 @@ let mousePos = new Vector2(0,0);
       // sheenColor: new Color("#d18832").convertSRGBToLinear(),
       sheenColor: new Color("#ff8a00").convertSRGBToLinear(),
       clearcoat: 0.5,
-
       // flatShading: true,
     }),
   );
   sphere.rotation.y += Math.PI * 1.25;
-
+  sphere.castShadow = true;
+  sphere.receiveShadow = true;
   scene.add(sphere);
 
 
@@ -165,6 +173,8 @@ let mousePos = new Vector2(0,0);
     if(object instanceof Mesh) {
       object.material.envMap = envMap;
       // object.material.color = new Color("#FFCB8E");
+      object.castShadow = true;
+      object.receiveShadow = true;
     }
   });
   scene.add(plane);
@@ -207,10 +217,10 @@ let mousePos = new Vector2(0,0);
      * 
      * then at the end apply a rotation on a random axis
      */           
-    planeRot += delta * 1.5;
+    planeRot += delta * 0.25;
     plane.rotateOnAxis(new Vector3(0, 0, 1).normalize(), 0.65);   // random axis
     plane.rotateOnAxis(new Vector3(0, 1, 0), planeRot);   // y-axis rotation
-    plane.rotateOnAxis(new Vector3(0, 0, 1), 0.5);        // this decides the radius
+    plane.rotateOnAxis(new Vector3(0, 0, 1), 0.95);        // this decides the radius
     plane.translateY(11);
     plane.rotateOnAxis(new Vector3(1,0,0), -Math.PI * 0.5);
 
