@@ -27,9 +27,15 @@ import {
 import { RGBELoader } from "https://cdn.skypack.dev/three-stdlib@2.8.5/loaders/RGBELoader";
 import { OrbitControls } from "https://cdn.skypack.dev/three-stdlib@2.8.5/controls/OrbitControls";
 import { GLTFLoader } from "https://cdn.skypack.dev/three-stdlib@2.8.5/loaders/GLTFLoader";
+import anime from 'https://cdn.skypack.dev/animejs@3.2.1';
 
 const scene = new Scene();
-scene.background = new Color("#FFEECC");
+// scene.background = new Color("#FFEECC");
+// document.body.style.background = "#FFEECC";
+// document.body.style.background = "linear-gradient(45deg, rgb(255 219 158), rgb(253 243 220))";
+
+let sunBackground = document.querySelector(".sun-background");
+let moonBackground = document.querySelector(".moon-background");
 
 const ringsScene = new Scene();
 
@@ -39,7 +45,7 @@ camera.position.set(0, 15, 50);
 const ringsCamera = new PerspectiveCamera(45, innerWidth / innerHeight, 0.1, 1000);
 ringsCamera.position.set(0, 0, 50);
 
-const renderer = new WebGLRenderer({ antialias: true });
+const renderer = new WebGLRenderer({ antialias: true, alpha: true });
 renderer.setSize(innerWidth, innerHeight);
 renderer.toneMapping = ACESFilmicToneMapping;
 renderer.outputEncoding = sRGBEncoding;
@@ -132,6 +138,8 @@ let mousePos = new Vector2(0,0);
       clearcoat: 0.5,
     }),
   );
+  sphere.sunEnvIntensity = 0.4;
+  sphere.moonEnvIntensity = 0.1;
   sphere.rotation.y += Math.PI * 1.25;
   sphere.receiveShadow = true;
   scene.add(sphere);
@@ -151,6 +159,8 @@ let mousePos = new Vector2(0,0);
     })
   );
   ring1.name = "ring";
+  ring1.sunOpacity = 0.35;
+  ring1.moonOpacity = 0.03;
   ringsScene.add(ring1);
 
   const ring2 = new Mesh(
@@ -164,6 +174,8 @@ let mousePos = new Vector2(0,0);
     })
   );
   ring2.name = "ring";
+  ring2.sunOpacity = 0.35;
+  ring2.moonOpacity = 0.1;
   ringsScene.add(ring2);
 
   const ring3 = new Mesh(
@@ -177,6 +189,8 @@ let mousePos = new Vector2(0,0);
     })
   );
   ring3.name = "ring";
+  ring3.sunOpacity = 0.35;
+  ring3.moonOpacity = 0.03;
   ringsScene.add(ring3);
 
 
@@ -194,50 +208,59 @@ let mousePos = new Vector2(0,0);
   ];
 
 
-  window.addEventListener("keypress", (e) => {
-    if(e.key == "k") {
-      sunLight.intensity = 0;
-      moonLight.intensity = 3.5;
+  let daytime = true;
+  let animating = false;
+  window.addEventListener("mousemove", (e) => {
+    if(animating) return;
+    
+    let anim = [0, 1];
 
-      sphere.material.sheen = 0;
-      scene.children.forEach((child) => {
-        child.traverse((object) => {
-          if(object instanceof Mesh && object.material.envMap) {
-            object.material.envMapIntensity *= 0.35;
-          }
-        });
-      });
-
-      ringsScene.children.forEach((child, i) => {
-        child.traverse((object) => {
-          object.material.opacity *= i == 1 ? 0.15 : 0.05;
-        });
-      });
-
-      // scene.background = new Color("#304255").convertSRGBToLinear();
-      scene.background = new Color("#303742").multiplyScalar(1.7).convertSRGBToLinear();
+    if(e.clientX > (innerWidth - 200) && !daytime) {
+      anim = [1, 0];
+    } else if(e.clientX < 200 && daytime) {
+      anim = [0, 1];
+    } else {
+      return;
     }
-    if(e.key == "l") {
-      sunLight.intensity = 3.5;
-      moonLight.intensity = 0;
 
-      sphere.material.sheen = 1;
-      scene.children.forEach((child) => {
-        child.traverse((object) => {
-          if(object instanceof Mesh && object.material.envMap) {
-            object.material.envMapIntensity *= 1 / 0.35;
-          }
+    animating = true;
+
+    let obj = { t: 0 };
+    anime({
+      targets: obj,
+      t: anim,
+      complete: () => {
+        animating = false;
+        daytime = !daytime;
+      },
+      update: () => {
+        sunLight.intensity = 3.5 * (1-obj.t);
+        moonLight.intensity = 3.5 * obj.t;
+
+        sunLight.position.setY(20 * (1-obj.t));
+        moonLight.position.setY(20 * obj.t);
+
+        sphere.material.sheen = (1-obj.t);
+        scene.children.forEach((child) => {
+          child.traverse((object) => {
+            if(object instanceof Mesh && object.material.envMap) {
+              object.material.envMapIntensity = object.sunEnvIntensity * (1-obj.t) + object.moonEnvIntensity * obj.t;
+            }
+          });
         });
-      });
-
-      ringsScene.children.forEach((child, i) => {
-        child.traverse((object) => {
-          object.material.opacity *= i == 1 ? 1 / 0.15 : 1 / 0.05;
+      
+        ringsScene.children.forEach((child, i) => {
+          child.traverse((object) => {
+            object.material.opacity = object.sunOpacity * (1-obj.t) + object.moonOpacity * obj.t;
+          });
         });
-      });
 
-      scene.background = new Color("#FFEECC");
-    }
+        sunBackground.style.opacity = 1-obj.t;
+        moonBackground.style.opacity = obj.t;
+      },
+      easing: 'easeInOutSine',
+      duration: 500,
+    });
   });
 
 
@@ -309,6 +332,8 @@ function makePlane(planeMesh, trailTexture, envMap, scene) {
   plane.traverse((object) => {
     if(object instanceof Mesh) {
       object.material.envMap = envMap;
+      object.sunEnvIntensity = 1;
+      object.moonEnvIntensity = 0.3;
       // object.material.color = new Color("#FFCB8E");
       object.castShadow = true;
       object.receiveShadow = true;
@@ -330,6 +355,8 @@ function makePlane(planeMesh, trailTexture, envMap, scene) {
       alphaMap: trailTexture,
     })
   );
+  trail.sunEnvIntensity = 3;
+  trail.moonEnvIntensity = 0.7;
   trail.rotateX(Math.PI);
   trail.translateY(1.1);
 
