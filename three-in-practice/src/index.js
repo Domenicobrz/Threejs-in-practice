@@ -51,7 +51,6 @@ document.body.appendChild(renderer.domElement);
 const sunLight = new DirectionalLight(
   new Color("#FFFFFF").convertSRGBToLinear(),
   3.5,
-  200,
 );
 sunLight.position.set(10, 20, 10);
 sunLight.castShadow = true;
@@ -65,23 +64,23 @@ sunLight.shadow.camera.top = 10;
 sunLight.shadow.camera.right = 10;
 scene.add(sunLight);
 
-
-// const moonLight = new DirectionalLight(
-//   new Color("#FFFFFF").convertSRGBToLinear(),
-//   3.5,
-//   200,
-// );
-// moonLight.position.set(-10, 20, 10);
-// moonLight.castShadow = true;
-// moonLight.shadow.mapSize.width = 512;
-// moonLight.shadow.mapSize.height = 512;
-// moonLight.shadow.camera.near = 0.5;
-// moonLight.shadow.camera.far = 100;
-// moonLight.shadow.camera.left = -10;
-// moonLight.shadow.camera.bottom = -10;
-// moonLight.shadow.camera.top = 10;
-// moonLight.shadow.camera.right = 10;
-// scene.add(moonLight);
+const moonLight = new DirectionalLight(
+  // new Color("#66aaff").convertSRGBToLinear(),
+  new Color("#77ccff").convertSRGBToLinear(),
+  // new Color("#cceeff").convertSRGBToLinear(),
+  0,
+);
+moonLight.position.set(-10, 20, 10);
+moonLight.castShadow = true;
+moonLight.shadow.mapSize.width = 512;
+moonLight.shadow.mapSize.height = 512;
+moonLight.shadow.camera.near = 0.5;
+moonLight.shadow.camera.far = 100;
+moonLight.shadow.camera.left = -10;
+moonLight.shadow.camera.bottom = -10;
+moonLight.shadow.camera.top = 10;
+moonLight.shadow.camera.right = 10;
+scene.add(moonLight);
 
 // // Create a helper for the shadow camera (optional)
 // const helper = new CameraHelper( light.shadow.camera );
@@ -129,18 +128,13 @@ let mousePos = new Vector2(0,0);
       envMapIntensity: 0.4,
       sheen: 1,
       sheenRoughness: 0.75,
-      // sheenColor: new Color("#FFCB8E").convertSRGBToLinear(),
-      // sheenColor: new Color("#d18832").convertSRGBToLinear(),
       sheenColor: new Color("#ff8a00").convertSRGBToLinear(),
       clearcoat: 0.5,
     }),
   );
   sphere.rotation.y += Math.PI * 1.25;
-  sphere.castShadow = true;
   sphere.receiveShadow = true;
   scene.add(sphere);
-
-
 
 
   const ring1 = new Mesh(
@@ -156,6 +150,7 @@ let mousePos = new Vector2(0,0);
       opacity: 0.35,
     })
   );
+  ring1.name = "ring";
   ringsScene.add(ring1);
 
   const ring2 = new Mesh(
@@ -168,6 +163,7 @@ let mousePos = new Vector2(0,0);
       side: DoubleSide,
     })
   );
+  ring2.name = "ring";
   ringsScene.add(ring2);
 
   const ring3 = new Mesh(
@@ -180,13 +176,15 @@ let mousePos = new Vector2(0,0);
       side: DoubleSide,
     })
   );
+  ring3.name = "ring";
   ringsScene.add(ring3);
 
 
   // https://sketchfab.com/3d-models/cartoon-plane-f312ec9f87794bdd83630a3bc694d8ea#download
   // "Cartoon Plane" (https://skfb.ly/UOLT) by antonmoek is licensed under Creative Commons Attribution 
   // (http://creativecommons.org/licenses/by/4.0/).
-  let plane = (await new GLTFLoader().loadAsync("assets/plane/scene.gltf")).scene.children[0];
+  // let plane = (await new GLTFLoader().loadAsync("assets/plane/scene.gltf")).scene.children[0];
+  let plane = (await new GLTFLoader().loadAsync("assets/plane/scene5.glb")).scene.children[0];
   let planesData = [
     makePlane(plane, textures.planeTrailMask, envMap, scene),
     makePlane(plane, textures.planeTrailMask, envMap, scene),
@@ -194,6 +192,54 @@ let mousePos = new Vector2(0,0);
     makePlane(plane, textures.planeTrailMask, envMap, scene),
     makePlane(plane, textures.planeTrailMask, envMap, scene),
   ];
+
+
+  window.addEventListener("keypress", (e) => {
+    if(e.key == "k") {
+      sunLight.intensity = 0;
+      moonLight.intensity = 3.5;
+
+      sphere.material.sheen = 0;
+      scene.children.forEach((child) => {
+        child.traverse((object) => {
+          if(object instanceof Mesh && object.material.envMap) {
+            object.material.envMapIntensity *= 0.35;
+          }
+        });
+      });
+
+      ringsScene.children.forEach((child, i) => {
+        child.traverse((object) => {
+          object.material.opacity *= i == 1 ? 0.15 : 0.05;
+        });
+      });
+
+      // scene.background = new Color("#304255").convertSRGBToLinear();
+      scene.background = new Color("#303742").multiplyScalar(1.7).convertSRGBToLinear();
+    }
+    if(e.key == "l") {
+      sunLight.intensity = 3.5;
+      moonLight.intensity = 0;
+
+      sphere.material.sheen = 1;
+      scene.children.forEach((child) => {
+        child.traverse((object) => {
+          if(object instanceof Mesh && object.material.envMap) {
+            object.material.envMapIntensity *= 1 / 0.35;
+          }
+        });
+      });
+
+      ringsScene.children.forEach((child, i) => {
+        child.traverse((object) => {
+          object.material.opacity *= i == 1 ? 1 / 0.15 : 1 / 0.05;
+        });
+      });
+
+      scene.background = new Color("#FFEECC");
+    }
+  });
+
 
   let clock = new Clock();
 
@@ -240,7 +286,7 @@ let mousePos = new Vector2(0,0);
       plane.rotateOnAxis(new Vector3(0, 1, 0), planeData.rot);    // y-axis rotation
       plane.rotateOnAxis(new Vector3(0, 0, 1), planeData.rad);    // this decides the radius
       plane.translateY(planeData.yOff);
-      plane.rotateOnAxis(new Vector3(1,0,0), -Math.PI * 0.5);
+      plane.rotateOnAxis(new Vector3(1,0,0), +Math.PI * 0.5);
     });
 
     renderer.autoClear = false;
@@ -273,7 +319,7 @@ function makePlane(planeMesh, trailTexture, envMap, scene) {
     new PlaneGeometry(1, 2),
     new MeshPhysicalMaterial({
       envMap,
-      envMapIntensity: 5,
+      envMapIntensity: 3,
 
       roughness: 0.4,
       metalness: 0,
@@ -282,10 +328,9 @@ function makePlane(planeMesh, trailTexture, envMap, scene) {
       transparent: true,
       opacity: 1,
       alphaMap: trailTexture,
-
-      side: DoubleSide,
     })
   );
+  trail.rotateX(Math.PI);
   trail.translateY(1.1);
 
   let group = new Group();
@@ -298,7 +343,7 @@ function makePlane(planeMesh, trailTexture, envMap, scene) {
     group,
     yOff: 10.5 + Math.random() * 1.0,
     rot: Math.PI * 2,  // just to set a random starting point
-    rad: Math.random() * Math.PI * 0.5,
+    rad: Math.random() * Math.PI * 0.45 + Math.PI * 0.05,
     randomAxis: new Vector3(nr(), nr(), nr()).normalize(),
     randomAxisRot: Math.random() * Math.PI * 2,
   };
