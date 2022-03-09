@@ -17,7 +17,6 @@ import {
   Vector2,
   DirectionalLight,
   Clock,
-  RepeatWrapping,
   RingGeometry,
   Vector3,
   PlaneGeometry,
@@ -30,9 +29,6 @@ import { GLTFLoader } from "https://cdn.skypack.dev/three-stdlib@2.8.5/loaders/G
 import anime from 'https://cdn.skypack.dev/animejs@3.2.1';
 
 const scene = new Scene();
-// scene.background = new Color("#FFEECC");
-// document.body.style.background = "#FFEECC";
-// document.body.style.background = "linear-gradient(45deg, rgb(255 219 158), rgb(253 243 220))";
 
 let sunBackground = document.querySelector(".sun-background");
 let moonBackground = document.querySelector(".moon-background");
@@ -71,9 +67,7 @@ sunLight.shadow.camera.right = 10;
 scene.add(sunLight);
 
 const moonLight = new DirectionalLight(
-  // new Color("#66aaff").convertSRGBToLinear(),
   new Color("#77ccff").convertSRGBToLinear(),
-  // new Color("#cceeff").convertSRGBToLinear(),
   0,
 );
 moonLight.position.set(-10, 20, 10);
@@ -103,25 +97,19 @@ let mousePos = new Vector2(0,0);
   let pmrem = new PMREMGenerator(renderer);
   let envmapTexture = await new RGBELoader()
     .setDataType(FloatType)
-    .loadAsync("assets/old_room_2k.hdr");
+    .loadAsync("assets/old_room_2k.hdr");  // thanks to https://polyhaven.com/hdris !
   let envMap = pmrem.fromEquirectangular(envmapTexture).texture;
 
   let textures = {
-    bump: await new TextureLoader().loadAsync("assets/earthbump1k.jpg"),
-    map: await new TextureLoader().loadAsync("assets/earthmap1k4.jpg"),
-    // map: await new TextureLoader().loadAsync("assets/earthmap1k.jpg"),
-    spec: await new TextureLoader().loadAsync("assets/earthspec1k4.jpg"),
-    flakes: await new TextureLoader().loadAsync("assets/flakes.jpg"),
+    // thanks to https://free3d.com/user/ali_alkendi !
+    bump: await new TextureLoader().loadAsync("assets/earthbump.jpg"),
+    map: await new TextureLoader().loadAsync("assets/earthmap.jpg"),
+    spec: await new TextureLoader().loadAsync("assets/earthspec.jpg"),
     planeTrailMask: await new TextureLoader().loadAsync("assets/mask.png"),
   };
 
   // Important to know!
   // textures.map.encoding = sRGBEncoding;
-
-  textures.flakes.repeat = new Vector2(60, 60);
-  textures.flakes.wrapS = RepeatWrapping;
-  textures.flakes.wrapT = RepeatWrapping;
-
 
   let sphere = new Mesh(
     new SphereGeometry(10, 70, 70),
@@ -146,8 +134,7 @@ let mousePos = new Vector2(0,0);
 
 
   const ring1 = new Mesh(
-    // new RingGeometry(15, 14.5, 80),
-    new RingGeometry(15, 13.5, 80, 1, 0), // Math.PI * 0.5 + 0.1, Math.PI * 2 - 0.2),
+    new RingGeometry(15, 13.5, 80, 1, 0),
     new MeshPhysicalMaterial({
       color: new Color("#FFCB8E").convertSRGBToLinear().multiplyScalar(200),
       roughness: 0.25,
@@ -164,8 +151,7 @@ let mousePos = new Vector2(0,0);
   ringsScene.add(ring1);
 
   const ring2 = new Mesh(
-    // new RingGeometry(16, 15.75, 80),
-    new RingGeometry(16.5, 15.75, 80, 1, 0), // Math.PI * 1.5 + 0.4, Math.PI * 2 - 0.8),
+    new RingGeometry(16.5, 15.75, 80, 1, 0), 
     new MeshBasicMaterial({
       color: new Color("#FFCB8E").convertSRGBToLinear(),
       transparent: true,
@@ -179,7 +165,6 @@ let mousePos = new Vector2(0,0);
   ringsScene.add(ring2);
 
   const ring3 = new Mesh(
-    // new RingGeometry(18, 17.75, 80),
     new RingGeometry(18, 17.75, 80),
     new MeshBasicMaterial({
       color: new Color("#FFCB8E").convertSRGBToLinear().multiplyScalar(50),
@@ -193,12 +178,10 @@ let mousePos = new Vector2(0,0);
   ring3.moonOpacity = 0.03;
   ringsScene.add(ring3);
 
-
   // https://sketchfab.com/3d-models/cartoon-plane-f312ec9f87794bdd83630a3bc694d8ea#download
   // "Cartoon Plane" (https://skfb.ly/UOLT) by antonmoek is licensed under Creative Commons Attribution 
   // (http://creativecommons.org/licenses/by/4.0/).
-  // let plane = (await new GLTFLoader().loadAsync("assets/plane/scene.gltf")).scene.children[0];
-  let plane = (await new GLTFLoader().loadAsync("assets/plane/scene5.glb")).scene.children[0];
+  let plane = (await new GLTFLoader().loadAsync("assets/plane/scene.glb")).scene.children[0];
   let planesData = [
     makePlane(plane, textures.planeTrailMask, envMap, scene),
     makePlane(plane, textures.planeTrailMask, envMap, scene),
@@ -274,7 +257,6 @@ let mousePos = new Vector2(0,0);
     controls.update();
     renderer.render(scene, camera);
 
-
     ring1.rotation.x = ring1.rotation.x * 0.95 + mousePos.y * 0.05 * 1.2;
     ring1.rotation.y = ring1.rotation.y * 0.95 + mousePos.x * 0.05 * 1.2;
 
@@ -334,7 +316,6 @@ function makePlane(planeMesh, trailTexture, envMap, scene) {
       object.material.envMap = envMap;
       object.sunEnvIntensity = 1;
       object.moonEnvIntensity = 0.3;
-      // object.material.color = new Color("#FFCB8E");
       object.castShadow = true;
       object.receiveShadow = true;
     }
